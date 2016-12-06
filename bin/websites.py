@@ -21,6 +21,9 @@ class EasternPioneer(object):
 			'ValidCode' : ''
 		}
 
+		self.is_booking = True # 是否继续预订
+		self.is_login = False # 是否已登录
+
 		self.operate = '' # response对象(不含read)
 		self.cj = cookielib.CookieJar()
 		self.opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.cj))
@@ -33,21 +36,28 @@ class EasternPioneer(object):
 		self.pdata['Account'] = account
 		self.pdata['Pwd'] = password
 
-		Utils.log("INFO", "登录中 ...")
+		while not self.is_login:
+			Utils.log("INFO", "登录中 ...")
 
-		Utils.log("INFO", "获取验证码中 ...")
-		self._get_icode_img()
+			Utils.log("INFO", "获取验证码中 ...")
+			self._get_icode_img()
 
-		Utils.log("INFO", "识别验证码中 ...")
-		self._identify_icode_img()
-		Utils.log("INFO", "验证码为 %s" % self.pdata['ValidCode'])
+			Utils.log("INFO", "识别验证码中 ...")
+			self._identify_icode_img()
+			Utils.log("INFO", "验证码为 %s" % self.pdata['ValidCode'])
 
-		Utils.log("INFO", "登录中 ...")
-		self.operate = self._get_response(iconfig.LOGINURL, self.pdata)
-		curl_url = self.operate.geturl()
-		web_content = self.operate.read()
-		Utils.log("INFO", "curl_url: %s" % curl_url)
-		Utils.log("INFO", "web_content: %s" % web_content)
+			Utils.log("INFO", "登录中 ...")
+			self.operate = self._get_response(iconfig.LOGINURL, self.pdata)
+			# curl_url = self.operate.geturl()
+			web_content = self.operate.read()
+			# Utils.log("INFO", "curl_url: %s" % curl_url)
+			# Utils.log("INFO", "web_content: %s" % web_content)
+			if web_content == iconfig.LOGIN_RESPONSE['success']:
+				Utils.log("INFO", "登录成功(%s)" % web_content)
+				self.is_login = True
+			else:
+				Utils.log("ERROR", "登录失败，重新登录(%s)" % web_content)
+
 
 		return
 
