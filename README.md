@@ -29,9 +29,9 @@ Pillow和pytesseract安装如下：
 
 ```
 pip install Pillow
+brew install tesseract
 pip install pytesseract
 ```
-MacOS下安装tesseract-ocr请参考[链接](http://www.jianshu.com/p/748d51cbd20f)。
 
 ****
 

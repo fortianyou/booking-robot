@@ -14,15 +14,25 @@ from utils import Utils
 class EasternPioneer(object):
 
 	def __init__(self):
-		self.icode = '验证码' 
+		self.pdata = {
+			'AjaxMethod' : 'LOGIN',
+			'Account' : '',
+			'Pwd' : '',
+			'ValidCode' : ''
+		}
 
+		self.operate = '' # response对象(不含read)
 		self.cj = cookielib.CookieJar()
 		self.opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.cj))
-
+		urllib2.install_opener(self.opener)
+		
 		return
 
 	# 登录
 	def login(self, account='', password=''):
+		self.pdata['Account'] = account
+		self.pdata['Pwd'] = password
+
 		Utils.log("INFO", "登录中 ...")
 
 		Utils.log("INFO", "获取验证码中 ...")
@@ -30,7 +40,14 @@ class EasternPioneer(object):
 
 		Utils.log("INFO", "识别验证码中 ...")
 		self._identify_icode_img()
-		Utils.log("INFO", "验证码为 %s" % self.icode)
+		Utils.log("INFO", "验证码为 %s" % self.pdata['ValidCode'])
+
+		Utils.log("INFO", "登录中 ...")
+		self.operate = self._get_response(iconfig.LOGINURL, self.pdata)
+		curl_url = self.operate.geturl()
+		web_content = self.operate.read()
+		Utils.log("INFO", "curl_url: %s" % curl_url)
+		Utils.log("INFO", "web_content: %s" % web_content)
 
 		return
 
@@ -41,8 +58,12 @@ class EasternPioneer(object):
 
 	# 识别验证码图片
 	def _identify_icode_img(self):
-		icode_image = Image.open('../resources/EasternPioneer-icode.png')
-		self.icode = pytesseract.image_to_string(icode_image)
+		if iconfig.AUTO_IDENTIFY_ICODE:
+			icode_image = Image.open('../resources/EasternPioneer-icode.png')
+			self.pdata['ValidCode'] = pytesseract.image_to_string(icode_image)
+		else:
+			self.pdata['ValidCode'] = raw_input("请输入验证码: ")
+
 
 	def _get_response(self, url, data = None):
 		if data is not None:
