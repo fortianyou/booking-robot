@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
-LOGINURL = r'http://wsyc.dfss.com.cn/DfssAjax.aspx'
-ICODEURL = r'http://wsyc.dfss.com.cn/validpng.aspx?aa=3&page=lg'
-BOOKURL = r'http://wsyc.dfss.com.cn/pc-client/wsyc.aspx?stuid='
+LOGIN_URL = r'http://wsyc.dfss.com.cn/DfssAjax.aspx'
+LOGIN_ICON_URL = r'http://wsyc.dfss.com.cn/validpng.aspx?aa=3&page=lg'
+BOOK_URL = r'http://wsyc.dfss.com.cn/Ajax/StuHdl.ashx?'
+BOOK_ICON_URL = r'http://wsyc.dfss.com.cn/validpng.aspx'
 
 AUTO_IDENTIFY_ICODE = False
 

@@ -14,10 +14,19 @@ from utils import Utils
 class EasternPioneer(object):
 
 	def __init__(self):
-		self.pdata = {
+		self.login_pdata = {
 			'AjaxMethod' : 'LOGIN',
 			'Account' : '',
 			'Pwd' : '',
+			'ValidCode' : ''
+		}
+
+		self.book_pdata = {
+			'loginType' : 2,
+			'method' : 'stu',
+			'stuid' : '',
+			'sfznum' : '',
+			'carid': '',
 			'ValidCode' : ''
 		}
 
@@ -33,48 +42,60 @@ class EasternPioneer(object):
 
 	# 登录
 	def login(self, account='', password=''):
-		self.pdata['Account'] = account
-		self.pdata['Pwd'] = password
+		self.login_pdata['Account'] = account
+		self.login_pdata['Pwd'] = password
 
 		while not self.is_login:
 			Utils.log("INFO", "登录中 ...")
 
-			Utils.log("INFO", "获取验证码中 ...")
-			self._get_icode_img()
+			Utils.log("INFO", "获取登录验证码中 ...")
+			self._get_icode_img(iconfig.LOGIN_ICON_URL, "EasternPioneer-login-icon.png")
 
-			Utils.log("INFO", "识别验证码中 ...")
-			self._identify_icode_img()
-			Utils.log("INFO", "验证码为 %s" % self.pdata['ValidCode'])
+			Utils.log("INFO", "识别登录验证码中 ...")
+			self.login_pdata['ValidCode'] = self._identify_icode_img("EasternPioneer-login-icon.png")
+			Utils.log("INFO", "登录验证码为 %s" % self.login_pdata['ValidCode'])
 
 			Utils.log("INFO", "登录中 ...")
-			self.operate = self._get_response(iconfig.LOGINURL, self.pdata)
-			# curl_url = self.operate.geturl()
+			self.operate = self._get_response(iconfig.LOGIN_URL, self.login_pdata)
 			web_content = self.operate.read()
-			# Utils.log("INFO", "curl_url: %s" % curl_url)
-			# Utils.log("INFO", "web_content: %s" % web_content)
 			if web_content == iconfig.LOGIN_RESPONSE['success']:
 				Utils.log("INFO", "登录成功(%s)" % web_content)
 				self.is_login = True
 			else:
 				Utils.log("ERROR", "登录失败，重新登录(%s)" % web_content)
 
-
 		return
 
+	# 约车
+	def book(self):
+		Utils.log("INFO", "获取约车验证码中 ...")
+		self._get_icode_img(iconfig.BOOK_ICON_URL, "EasternPioneer-book-icon.png")
+
+		Utils.log("INFO", "识别约车验证码中 ...")
+		self.book_pdata['ValidCode'] = self._identify_icode_img("EasternPioneer-book-icon.png")
+		Utils.log("INFO", "约车验证码为 %s" % self.book_pdata['ValidCode'])
+
+		self.book_pdata['stuid'] = self.login_pdata['Account']
+
+		Utils.log("INFO", "查询中 ...")
+		self.operate = self._get_response(iconfig.BOOK_URL + Utils.dict2str(self.book_pdata), self.book_pdata)
+		web_content = self.operate.read()
+		Utils.log("INFO", "查询结束(%s)" % web_content)
+
 	# 获取验证码图片
-	def _get_icode_img(self):
-		icode_img = self._get_response(iconfig.ICODEURL)
-		self._write_file('../resources/EasternPioneer-icode.png', icode_img)
+	def _get_icode_img(self, url, fname):
+		icode_img = self._get_response(url)
+		self._write_file("../resources/%s" % fname, icode_img)
 
 	# 识别验证码图片
-	def _identify_icode_img(self):
+	def _identify_icode_img(self, fname):
 		if iconfig.AUTO_IDENTIFY_ICODE:
-			icode_image = Image.open('../resources/EasternPioneer-icode.png')
-			self.pdata['ValidCode'] = pytesseract.image_to_string(icode_image)
+			icode_image = Image.open("../resources/%s" % fname)
+			return pytesseract.image_to_string(icode_image)
 		else:
-			self.pdata['ValidCode'] = raw_input("请输入验证码: ")
+			return raw_input("请输入验证码: ")
 
-
+	# 获取响应
 	def _get_response(self, url, data = None):
 		if data is not None:
 			req = urllib2.Request(url, urllib.urlencode(data))
