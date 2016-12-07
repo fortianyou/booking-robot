@@ -10,3 +10,23 @@ AUTO_IDENTIFY_ICODE = False
 LOGIN_RESPONSE = {
 	'success' : 'true'
 }
+
+BOOK_DATE = ['2016-12-09']
+
+BOOK_PERIOD = ['01']
+
+BOOK_START_HOUR = {
+	'01' : 7,
+	'02' : 9,
+	'03' : 13,
+	'04' : 17,
+	'05' : 19
+}
+
+BOOK_END_HOUR = {
+	'01' : 9,
+	'02' : 13,
+	'03' : 17,
+	'04' : 19,
+	'05' : 21
+}

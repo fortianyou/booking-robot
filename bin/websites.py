@@ -21,12 +21,32 @@ class EasternPioneer(object):
 			'ValidCode' : ''
 		}
 
+		self.query_pdata = {
+			'loginType':'2',
+			'method':'stu',
+			'stuid':'',
+			'sfznum':'',
+			'carid':'',
+			'ValidCode':''
+		}
+
 		self.book_pdata = {
-			'loginType' : 2,
-			'method' : 'stu',
+			'loginType' : '2',
+			'method' : 'yueche',
 			'stuid' : '',
-			'sfznum' : '',
-			'carid': '',
+			'bmnum' : 'BD15111000359',
+			'start' : 7,
+			'end' : 9,
+			'lessionid' : '001',
+			'trainpriceid' : 'BD13062500001',
+			'lesstypeid' : '02',
+			'date' : '2016-12-10',
+			'id' : '1',
+			'carid' : '',
+			'ycmethod' : '03',
+			'cartypeid' : '02',
+			'trainsessionid' : '01',
+			'ReleaseCarID' : '',
 			'ValidCode' : ''
 		}
 
@@ -72,15 +92,31 @@ class EasternPioneer(object):
 		self._get_icode_img(iconfig.BOOK_ICON_URL, "EasternPioneer-book-icon.png")
 
 		Utils.log("INFO", "识别约车验证码中 ...")
-		self.book_pdata['ValidCode'] = self._identify_icode_img("EasternPioneer-book-icon.png")
+		self.query_pdata['ValidCode'] = self._identify_icode_img("EasternPioneer-book-icon.png")
+		self.book_pdata['ValidCode'] = self.query_pdata['ValidCode']
 		Utils.log("INFO", "约车验证码为 %s" % self.book_pdata['ValidCode'])
 
+		self.query_pdata['stuid'] = self.login_pdata['Account']
 		self.book_pdata['stuid'] = self.login_pdata['Account']
 
 		Utils.log("INFO", "查询中 ...")
-		self.operate = self._get_response(iconfig.BOOK_URL + Utils.dict2str(self.book_pdata), self.book_pdata)
+		self.operate = self._get_response(iconfig.BOOK_URL + Utils.dict2str(self.query_pdata), self.query_pdata)
 		web_content = self.operate.read()
 		Utils.log("INFO", "查询结束(%s)" % web_content)
+
+		for date in iconfig.BOOK_DATE:
+			for period in iconfig.BOOK_PERIOD:
+			
+				self.book_pdata['start'] = iconfig.BOOK_START_HOUR[period]
+				self.book_pdata['end'] = iconfig.BOOK_END_HOUR[period]
+				self.book_pdata['date'] = date
+				self.book_pdata['trainsessionid'] = period
+
+				Utils.log("INFO", "即将预订：日期(%s), 时间段(%s), POST(%s)" % (date, period, Utils.dict2str(self.book_pdata)))
+
+				self.operate = self._get_response(iconfig.BOOK_URL + Utils.dict2str(self.book_pdata), self.book_pdata)
+				web_content = self.operate.read()
+				Utils.log("INFO", "预订结束(%s)" % web_content)
 
 	# 获取验证码图片
 	def _get_icode_img(self, url, fname):
