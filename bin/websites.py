@@ -6,7 +6,7 @@ import cookielib
 import re
 import pytesseract
 from PIL import Image
-
+import time
 import iconfig
 from utils import Utils
 
@@ -57,7 +57,6 @@ class EasternPioneer(object):
 		self.cj = cookielib.CookieJar()
 		self.opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.cj))
 		urllib2.install_opener(self.opener)
-		
 		return
 
 	# 登录
@@ -99,24 +98,33 @@ class EasternPioneer(object):
 		self.query_pdata['stuid'] = self.login_pdata['Account']
 		self.book_pdata['stuid'] = self.login_pdata['Account']
 
-		Utils.log("INFO", "查询中 ...")
-		self.operate = self._get_response(iconfig.BOOK_URL + Utils.dict2str(self.query_pdata), self.query_pdata)
-		web_content = self.operate.read()
-		Utils.log("INFO", "查询结束(%s)" % web_content)
+		#Utils.log("INFO", "查询中 ...")
+		#self.operate = self._get_response(iconfig.BOOK_URL + Utils.dict2str(self.query_pdata), self.query_pdata)
+		#web_content = self.operate.read()
+		#Utils.log("INFO", "查询结束(%s)" % web_content)
 
-		for date in iconfig.BOOK_DATE:
-			for period in iconfig.BOOK_PERIOD:
-			
-				self.book_pdata['start'] = iconfig.BOOK_START_HOUR[period]
-				self.book_pdata['end'] = iconfig.BOOK_END_HOUR[period]
-				self.book_pdata['date'] = date
-				self.book_pdata['trainsessionid'] = period
+		iteration = 1
+		while True:
 
-				Utils.log("INFO", "即将预订：日期(%s), 时间段(%s), POST(%s)" % (date, period, Utils.dict2str(self.book_pdata)))
+			Utils.log("INFO", "第%s次尝试预定(开始)" % iteration )
+			for date in iconfig.BOOK_DATE:
+				for period in iconfig.BOOK_PERIOD:
+					self.book_pdata['start'] = iconfig.BOOK_START_HOUR[period]
+					self.book_pdata['end'] = iconfig.BOOK_END_HOUR[period]
+					self.book_pdata['date'] = date
+					self.book_pdata['trainsessionid'] = period
 
-				self.operate = self._get_response(iconfig.BOOK_URL + Utils.dict2str(self.book_pdata), self.book_pdata)
-				web_content = self.operate.read()
-				Utils.log("INFO", "预订结束(%s)" % web_content)
+					Utils.log("INFO", "即将预订：日期(%s), 时间段(%s), POST(%s)" % (date, period, Utils.dict2str(self.book_pdata)))
+
+					self.operate = self._get_response(iconfig.BOOK_URL + Utils.dict2str(self.book_pdata))
+					web_content = self.operate.read()
+					Utils.log("INFO", "预订结束(%s)" % web_content)
+
+			Utils.log("INFO", "第%s次尝试预定(结束), 请等待一分钟" % iteration)
+			time.sleep(60)
+			iteration += 1
+
+
 
 	# 获取验证码图片
 	def _get_icode_img(self, url, fname):

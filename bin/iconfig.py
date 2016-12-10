@@ -11,9 +11,9 @@ LOGIN_RESPONSE = {
 	'success' : 'true'
 }
 
-BOOK_DATE = ['2016-12-09']
+BOOK_DATE = ['2016-12-18']
 
-BOOK_PERIOD = ['01']
+BOOK_PERIOD = ['03','04','02']
 
 BOOK_START_HOUR = {
 	'01' : 7,
